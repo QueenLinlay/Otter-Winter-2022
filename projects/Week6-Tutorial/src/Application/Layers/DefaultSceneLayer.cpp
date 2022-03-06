@@ -48,6 +48,8 @@
 #include "Gameplay/Components/MaterialSwapBehaviour.h"
 #include "Gameplay/Components/TriggerVolumeEnterBehaviour.h"
 #include "Gameplay/Components/SimpleCameraControl.h"
+#include "Gameplay/Components/SimpleObjectController.h"
+#include "Gameplay/Components/EnemyTrigger.h"
 
 // Physics
 #include "Gameplay/Physics/RigidBody.h"
@@ -134,6 +136,7 @@ void DefaultSceneLayer::_CreateScene()
 
 		// Load in the meshes
 		MeshResource::Sptr monkeyMesh = ResourceManager::CreateAsset<MeshResource>("Monkey.obj");
+		MeshResource::Sptr wallMesh = ResourceManager::CreateAsset<MeshResource>("Wall2.obj");
 
 		// Load in some textures
 		Texture2D::Sptr    boxTexture   = ResourceManager::CreateAsset<Texture2D>("textures/box-diffuse.png");
@@ -142,6 +145,7 @@ void DefaultSceneLayer::_CreateScene()
 		Texture2D::Sptr    leafTex      = ResourceManager::CreateAsset<Texture2D>("textures/leaves.png");
 		leafTex->SetMinFilter(MinFilter::Nearest);
 		leafTex->SetMagFilter(MagFilter::Nearest);
+
 
 #pragma region Basic Texture Creation
 		Texture2DDescription singlePixelDescriptor;
@@ -309,7 +313,7 @@ void DefaultSceneLayer::_CreateScene()
 		MeshResource::Sptr sphere = ResourceManager::CreateAsset<MeshResource>();
 		sphere->AddParam(MeshBuilderParam::CreateIcoSphere(ZERO, ONE, 5));
 		sphere->GenerateMesh();
-
+		
 		// Set up the scene's camera
 		GameObject::Sptr camera = scene->MainCamera->GetGameObject()->SelfRef();
 		{
@@ -342,25 +346,53 @@ void DefaultSceneLayer::_CreateScene()
 			physics->AddCollider(BoxCollider::Create(glm::vec3(50.0f, 50.0f, 1.0f)))->SetPosition({ 0,0,-1 });
 		}
 
-		GameObject::Sptr monkey1 = scene->CreateGameObject("Monkey 1");
+		GameObject::Sptr wall1 = scene->CreateGameObject("Wall 1");
 		{
 			// Set position in the scene
-			monkey1->SetPostion(glm::vec3(1.5f, 0.0f, 1.0f));
-
+			wall1->SetPostion(glm::vec3(1.5f, 0.0f, 0.5f));
+			wall1->SetRotation(glm::vec3(90.0f, 0.0f, 0.0f));
 			// Add some behaviour that relies on the physics body
-			monkey1->Add<JumpBehaviour>();
+			wall1->Add<JumpBehaviour>();
 
 			// Create and attach a renderer for the monkey
-			RenderComponent::Sptr renderer = monkey1->Add<RenderComponent>();
+			RenderComponent::Sptr renderer = wall1->Add<RenderComponent>();
+			renderer->SetMesh(wallMesh);
+			renderer->SetMaterial(boxMaterial);
+
+			/* Example of a trigger that interacts with static and kinematic bodies as well as dynamic bodies*/
+			EnemyTrigger::Sptr Check = wall1->Add<EnemyTrigger>();
+			TriggerVolume::Sptr volume = Check->AddComponent<TriggerVolume>();
+			ICollider::Sptr collider = volume->AddCollider(ConvexMeshCollider::Create());
+			
+			// Attach a plane collider that extends infinitely along the X/Y axis
+			//RigidBody::Sptr physics = wall1->Add<RigidBody>(/*static by default*/);
+			//physics->AddCollider(ConvexMeshCollider::Create());
+		}
+
+		GameObject::Sptr monkey2 = scene->CreateGameObject("Monkey 1");
+		{
+			// Set position in the scene
+			monkey2->SetPostion(glm::vec3(10.0f, 0.0f, 2.0f));
+
+			// Add some behaviour that relies on the physics body
+			monkey2->Add<JumpBehaviour>();
+
+			// Create and attach a renderer for the monkey
+			RenderComponent::Sptr renderer = monkey2->Add<RenderComponent>();
 			renderer->SetMesh(monkeyMesh);
-			renderer->SetMaterial(monkeyMaterial);
+			renderer->SetMaterial(boxMaterial);
 
 			// Example of a trigger that interacts with static and kinematic bodies as well as dynamic bodies
-			TriggerVolume::Sptr trigger = monkey1->Add<TriggerVolume>();
-			trigger->SetFlags(TriggerTypeFlags::Statics | TriggerTypeFlags::Kinematics);
-			trigger->AddCollider(BoxCollider::Create(glm::vec3(1.0f)));
+			EnemyTrigger::Sptr reset = monkey2->Add<EnemyTrigger>();
+			
+			monkey2->Add<SimpleObjectController>();
 
-			monkey1->Add<TriggerVolumeEnterBehaviour>();
+			//RigidBody - collider as well.
+			RigidBody::Sptr physics = monkey2->Add<RigidBody>(RigidBodyType::Dynamic);
+			physics->AddCollider(ConvexMeshCollider::Create());
+
+			//Movement from SimpleObjectController under Gameplay/Components
+			
 		}
 
 		GameObject::Sptr demoBase = scene->CreateGameObject("Demo Parent");

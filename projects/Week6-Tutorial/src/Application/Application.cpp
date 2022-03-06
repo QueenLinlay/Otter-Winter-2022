@@ -43,6 +43,8 @@
 #include "Gameplay/Components/SimpleCameraControl.h"
 #include "Gameplay/Components/ParticleSystem.h"
 #include "Gameplay/Components/Light.h"
+#include "Gameplay/Components/SimpleObjectController.h"
+#include "Gameplay/Components/EnemyTrigger.h"
 
 // GUI
 #include "Gameplay/Components/GUI/RectTransform.h"
@@ -272,6 +274,9 @@ void Application::_RegisterClasses()
 	ComponentManager::RegisterType<GuiText>();
 	ComponentManager::RegisterType<ParticleSystem>();
 	ComponentManager::RegisterType<Light>();
+
+	ComponentManager::RegisterType<SimpleObjectController>();
+	ComponentManager::RegisterType<EnemyTrigger>();
 }
 
 void Application::_Load() {
