@@ -423,7 +423,6 @@ void DefaultSceneLayer::_CreateScene()
 			monkey1->Add<TriggerVolumeEnterBehaviour>();
 		}
 
-
 		GameObject::Sptr ship = scene->CreateGameObject("Fenrir");
 		{
 			// Set position in the scene

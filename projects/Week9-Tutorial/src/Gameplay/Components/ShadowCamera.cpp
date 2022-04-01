@@ -150,7 +150,39 @@ void ShadowCamera::RenderImGui()
 			}
 		}
 	}
+	//Projection Matrix
+	{
+		ImGui::Separator();
+		ImGui::Text("Projection Matrix");
+		ImGui::Separator();
 
+		ImGui::Checkbox("Orthographic", &isOrtho);
+
+		if (isOrtho)
+		{
+			ImGui::InputFloat("Left", &_matData[0], 1.0f);
+			ImGui::InputFloat("Right", &_matData[1], 1.0f);
+			ImGui::InputFloat("Bottom", &_matData[2], 1.0f);
+			ImGui::InputFloat("Top", &_matData[3], 1.0f);
+			ImGui::InputFloat("zNear", &_matData[4], 1.0f);
+			ImGui::InputFloat("zFar", &_matData[5], 1.0f);
+			if (ImGui::Button("Set Projection Matrix"))
+			{
+				SetProjection(glm::ortho(_matData[0], _matData[1], _matData[2], _matData[3], _matData[4], _matData[5]));
+			}
+		}
+		else
+		{
+			ImGui::InputFloat("FOVY", &_matData[6], 1.0f);
+			ImGui::InputFloat("Aspect", &_matData[7], 1.0f);
+			ImGui::InputFloat("zNear", &_matData[4], 1.0f);
+			ImGui::InputFloat("zFar", &_matData[5], 1.0f);
+			if (ImGui::Button("Set Projection Matrix"))
+			{
+				SetProjection(glm::perspective(glm::radians(_matData[6]), _matData[7], _matData[4], _matData[5]));
+			}
+		}
+	}
 	ImGui::Separator();
 	ImGui::Text("Light Settings");
 	ImGui::Separator();
